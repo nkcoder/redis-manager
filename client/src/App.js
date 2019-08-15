@@ -1,9 +1,8 @@
 import React from 'react';
 import './App.css';
-import RedisService from './service/RedisService';
 import { Layout, Menu, Icon } from 'antd';
-import Info from './components/info/info';
-import Setting from './components/setting/setting';
+import Overview from './components/overview/overview';
+import Client from './components/client/client';
 import Database from './components/database/database';
 
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
@@ -14,23 +13,11 @@ const { SubMenu } = Menu
 class App extends React.Component {
   state = {
     collapsed: false,
-    info: '',
-    clients: [],
   }
 
   onCollapse = collapsed => {
     console.log(collapsed);
     this.setState({ collapsed });
-  }
-
-  async fetch() {
-    const { data } = await RedisService.info();
-    const clients = await RedisService.clients();
-    this.setState({ info: data, clients })
-  }
-
-  componentDidMount() {
-    this.fetch();
   }
 
   render() {
@@ -41,17 +28,17 @@ class App extends React.Component {
           <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}>
             <div className='logo' />
 
-            <Menu theme="dark" defaultSelectedKeys={['info']} mode="inline">
-              <Menu.Item key='info'>
-                <Icon type='info' />
-                <span>Info</span>
-                <Link to='/info' />
+            <Menu theme="dark" defaultSelectedKeys={['overview']} mode="inline">
+              <Menu.Item key='overview'>
+                <Icon type='info-circle' />
+                <span>Overview</span>
+                <Link to='/overview' />
               </Menu.Item>
 
-              <Menu.Item key='setting'>
-                <Icon type='setting' />
-                <span>Config</span>
-                <Link to='/setting' />
+              <Menu.Item key='clients'>
+                <Icon type='unordered-list' />
+                <span>Clients</span>
+                <Link to='/clients' />
               </Menu.Item>
 
               <Menu.Item key='database'>
@@ -79,9 +66,9 @@ class App extends React.Component {
           <Layout>
             <Header />
             <Content>
-              <Route exact path='/' component={Info} />
-              <Route path='/info' component={Info} />
-              <Route path='/setting' component={Setting} />
+              <Route exact path='/' component={Overview} />
+              <Route path='/overview' component={Overview} />
+              <Route path='/clients' component={Client} />
               <Route path='/database' component={Database} />
             </Content>
 

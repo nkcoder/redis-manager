@@ -2,10 +2,10 @@
   "name": "server",
   "version": "1.0.0",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon app.js"
   },
   "description": "node backend",
-  "main": "index.js",
+  "main": "app.js",
   "author": "daniel",
   "license": "MIT",
   "dependencies": {
