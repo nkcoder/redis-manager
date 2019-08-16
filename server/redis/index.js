@@ -1,6 +1,10 @@
 const redis = require('redis');
 const client = redis.createClient();
 
+client.client('SETNAME', 'redis-admin-app-backend', (_, reply) => {
+  console.log("client setname to: redis-admin-app-backend, reply: %s", reply);
+});
+
 client.on('error', function (err) {
   console.log('error', err);
 });

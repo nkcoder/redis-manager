@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Button, Table, Divider } from 'antd';
 import RedisService from 'service/RedisService';
+import { Button, Table, Empty, Input } from 'antd';
+const { Search } = Input;
 
 class Database extends Component {
 
@@ -41,28 +42,39 @@ class Database extends Component {
   }
 
   state = {
-    tableData: []
+    tableData: [],
+    nextCursor: 0,
+    dataDone: false,
+    query: ''
   }
 
   componentDidMount() {
-    this.fetchKeys(0);
+    const { query, nextCursor } = this.state;
+    this.fetchKeys(query, nextCursor);
   }
 
-  fetchKeys = async (cursor) => {
-    const { data: responseData } = await RedisService.allKeys(cursor);
-    const { cursor: newCursor, keys } = responseData;
+  fetchKeys = async (query, cursor) => {
+    console.log('cursor: %i', cursor);
+    const { newCursor, keys } = await this.doFetchKeys(query, cursor);
+
     console.log('allKeys, cursor: %s, data: %o', newCursor, keys);
 
     const tableData = keys.map((key, index) => (
       {
-        key: index,
+        key: key + '-' + index,
         rkey: key,
         type: '-',
         value: '-'
       }
     ))
 
-    this.setState({ tableData });
+    this.setState({ tableData, nextCursor: newCursor, dataDone: newCursor === '0' });
+  }
+
+  doFetchKeys = async (key, cursor) => {
+    const { data } = await RedisService.searchKey(key, cursor);
+    console.log("data: ", data);
+    return { newCursor: data.cursor, keys: data.keys };
   }
 
   showValue = async record => {
@@ -78,13 +90,72 @@ class Database extends Component {
     newData[index].type = type.toUpperCase();
     newData[index].value = value;
 
-    this.setState({ tableData: newData });
+    this.setState({ tableData: newData, newCursor: newCursor });
+  }
+
+  loadMoreData = async (query, cursor) => {
+    const { newCursor, keys } = await this.doFetchKeys(query, cursor);
+    console.log('load more data, lastCursor: %i, newCursor: %i, keys: %s', cursor, newCursor, keys);
+
+    const newData = keys.map((item, index) => (
+      {
+        key: item + '-' + index,
+        rkey: item,
+        type: '-',
+        value: '-'
+      }
+    ));
+    this.setState({ tableData: [...this.state.tableData, ...newData], nextCursor: newCursor, dataDone: newCursor === '0' });
+  }
+
+  handleSearchKey = async key => {
+    const { data } = await RedisService.searchKey(key, 0);
+    console.log('search key: %s, data: %s', key, data);
+
+    const { cursor: newCursor, keys } = data;
+    const newData = keys.map((key, index) => (
+      {
+        key: key + '-' + index,
+        rkey: key,
+        type: '-',
+        value: '-'
+      }
+    ))
+
+    this.setState({
+      tableData: newData,
+      nextCursor: newCursor,
+      dataDone: newCursor === '0',
+      query: key
+    })
+
+  }
+
+  handleRefresh = () => {
+    this.fetchKeys('', 0);
   }
 
   render() {
     return (
-      <div style={{ padding: '40px' }}>
+      <div style={{ padding: '10px 100px', width: '100%' }}>
+        <div style={{ overflow: 'auto' }}>
+          <span style={{ paddingBottom: '10px', width: '300', float: 'left' }}>
+            <Search placeholder='search key' enterButton='Search' size='default' onSearch={value => this.handleSearchKey(value)} maxLength='20' allowClear={true} />
+          </span>
+
+          <span style={{ paddingBottom: '10px', float: 'right' }}>
+            <Button type='ghost' onClick={() => this.handleRefresh()}>Refresh</Button>
+          </span>
+        </div>
+
+
         <Table columns={this.columns} dataSource={this.state.tableData} pagination={false} bordered={true} />
+        <div style={{ textAlign: 'center', padding: '20px' }}>
+          {
+            this.state.dataDone ? <Empty description={<span>no more data</span>} /> : < Button type='primary' onClick={() => this.loadMoreData(this.state.query, this.state.nextCursor)}> Load More</Button>
+          }
+        </div>
+
       </div>
     )
   }
