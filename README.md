@@ -1,11 +1,21 @@
-## Redis Admin
+# Redis Admin
 
 A Simple GUI client for Redis.
 
-### Front End
+## Client
 
-`react`, `antd`
+powered by `react` and `antd`, run: 
 
-### Back End
+```bash
+$ cd client
+$ yarn start
+```
 
-`nodejs`
+## Server
+
+powered by `nodejs` and `expressjs`, run:
+
+```bash
+$ cd server
+$ yarn start
+````
