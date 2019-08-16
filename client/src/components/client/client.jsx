@@ -11,25 +11,30 @@ class Client extends Component {
         title: 'ID',
         dataIndex: 'id',
         key: 'id',
+        align: 'center'
       },
       {
         title: 'Name',
         dataIndex: 'name',
         key: 'name',
+        align: 'center'
       },
       {
         title: 'Address',
         dataIndex: 'address',
         key: 'address',
+        align: 'center'
       },
       {
         title: 'Age',
         dataIndex: 'age',
         key: 'age',
+        align: 'center'
       },
       {
         title: 'Action',
         key: 'action',
+        align: 'center',
         render: (text, record) => (
           <div>
             <Button type='primary' onClick={this.showDetail}>Detail</Button>
@@ -85,6 +90,7 @@ class Client extends Component {
   }
 
   showDetail = () => {
+    console.log('show detail');
     this.setState({ detailVisible: true });
   }
 
@@ -99,11 +105,11 @@ class Client extends Component {
 
   render() {
     return (
-      <div style={{ padding: '20px' }}>
-        <div style={{ paddingBottom: '10px' }}>
+      <div style={{ padding: '40px' }}>
+        <div style={{ paddingBottom: '10px', textAlign: 'left' }}>
           <Button type='primary' onClick={() => this.handleRefresh()}>Refresh</Button>
         </div>
-        <Table columns={this.columns} dataSource={this.state.columnData} />
+        <Table columns={this.columns} dataSource={this.state.columnData} bordered={true} />
       </div >
     )
   }

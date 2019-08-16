@@ -1,11 +1,11 @@
 const router = require('express').Router();
-const client = require('../../redis/client');
+const client = require('../../redis');
 
 router.get('/', (req, res) => {
   client.client('LIST', (err, reply) => {
     if (err) {
       console.error('error', err);
-      res.json({});
+      throw 'error occur: ' + err;
     }
 
     console.log('reply: ', reply);
