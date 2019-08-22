@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import RedisService from 'service/RedisService';
-import { Button, Table, Empty, Input } from 'antd';
+import { Button, Table, Empty, Input, Popconfirm } from 'antd';
 import './database.css';
 
 const { Search } = Input;
@@ -12,44 +12,55 @@ class Database extends Component {
 
     this.columns = [
       {
-        key: 'rowKey',
-        dataIndex: 'key',
+        dataIndex: 'redisKey',
         title: 'Key',
         align: 'center',
       },
       {
-        key: 'type',
         dataIndex: 'type',
         title: 'Type',
         align: 'center',
       },
       {
-        key: 'value',
         dataIndex: 'value',
         title: 'Value',
         align: 'center',
       },
       {
-        key: 'action',
         dataIndex: 'action',
         title: 'Action',
         align: 'center',
         render: (text, record) => (
           <div>
-            <Button type='primary' className='op-btn' onClick={() => this.getValue(record.rowKey, record.key)}>Get</Button>
-            <Button type='ghost' className='op-btn' onClick={() => this.expireKey(record.key, 120)}>Expire</Button>
-            <Button type='danger' className='op-btn' onClick={() => this.deleteKey(record.key)}>Delete</Button>
+            <Button type='primary' className='op-btn' onClick={() => this.getValue(record.key, record.redisKey)}>Get</Button>
+            <Button type='ghost' className='op-btn' onClick={() => this.expireKey(record.redisKey, 120)}>Expire</Button>
+            <Popconfirm title='Sure to KILL?' onConfirm={() => this.deleteKeys(record.redisKey)}>
+              <Button type='danger' className='op-btn' >Delete</Button>
+            </Popconfirm>
           </div>
         )
       }
     ];
+
+    this.rowSelection = {
+      onChange: (selectedRowKeys, selectedRows) => {
+        console.log(`selectedRowKeys: ${selectedRowKeys}, selectedRows: ${JSON.stringify(selectedRows)}`);
+        this.setState({ selectedRowRedisKeys: selectedRows.map(row => row.redisKey) });
+        console.log(`selected redis keys: ${this.state.selectedRowRedisKeys}`);
+      },
+      getCheckboxProps: record => ({
+        name: record.name,
+        disabled: false
+      }),
+    }
   }
 
   state = {
     tableData: [],
     nextCursor: 0,
     dataDone: false,
-    query: ''
+    query: '',
+    selectedRowRedisKeys: []
   }
 
   componentDidMount() {
@@ -63,14 +74,7 @@ class Database extends Component {
 
     console.log('allKeys, cursor: %s, data: %o', newCursor, keys);
 
-    const tableData = keys.map((key, index) => (
-      {
-        rowKey: key + '-' + index,
-        key: key,
-        type: '-',
-        value: '-'
-      }
-    ))
+    const tableData = keys.map((key, index) => this.mapToTableRow(key, index));
 
     this.setState({ tableData, nextCursor: newCursor, dataDone: newCursor === '0' });
   }
@@ -90,7 +94,7 @@ class Database extends Component {
     console.log('newCursor: %s, type: %s, value: %o', cursor, type, value);
 
     const newData = [...this.state.tableData];
-    const index = newData.findIndex(item => item.rowKey === rowKey);
+    const index = newData.findIndex(item => item.key === rowKey);
     newData[index].type = type.toUpperCase();
     newData[index].value = value;
 
@@ -101,14 +105,7 @@ class Database extends Component {
     const { newCursor, keys } = await this.doLoadKeys(query, cursor);
     console.log('load more data, lastCursor: %i, newCursor: %i, keys: %s', cursor, newCursor, keys);
 
-    const newData = keys.map((item, index) => (
-      {
-        rowKey: item + '-' + index,
-        key: item,
-        type: '-',
-        value: '-'
-      }
-    ));
+    const newData = keys.map((key, index) => this.mapToTableRow(key, index));
     this.setState(
       {
         tableData: [...this.state.tableData, ...newData],
@@ -119,23 +116,21 @@ class Database extends Component {
   }
 
   searchKey = async key => {
-    const { data } = await RedisService.searchKey(key, 0);
-    console.log('search key: %s, data: %s', key, data);
+    const searchResult = [];
+    let cursor = '0';
+    do {
+      const { data } = await RedisService.searchKey(key, cursor);
+      const { cursor: newCursor, keys } = data;
+      const currentResult = keys.map((key, index) => this.mapToTableRow(key, index));
 
-    const { cursor: newCursor, keys } = data;
-    const newData = keys.map((key, index) => (
-      {
-        rowKey: key + '-' + index,
-        key: key,
-        type: '-',
-        value: '-'
-      }
-    ))
+      searchResult.push(...currentResult);
+      cursor = newCursor;
+    } while (searchResult.length < 30 && cursor !== '0');
 
     this.setState({
-      tableData: newData,
-      nextCursor: newCursor,
-      dataDone: newCursor === '0',
+      tableData: searchResult,
+      nextCursor: cursor,
+      dataDone: cursor === '0',
       query: key
     })
 
@@ -148,24 +143,43 @@ class Database extends Component {
     }
   }
 
-  deleteKey = async keys => {
+  deleteKeys = async keys => {
     const { data } = await RedisService.deleteKeys(keys);
     if (data.deleted !== keys.length) {
       console.warn("try to delete keys: %s, but only %i of them are deleted", keys, data.deleted);
     }
     this.loadKeys("", 0);
+    this.setState({ selectedRowRedisKeys: [] });
   }
 
+  mapToTableRow = (key, index) => (
+    {
+      key: key + '-' + index,
+      redisKey: key,
+      type: '-',
+      value: '-'
+    }
+  );
+
   render() {
+    let deleteButton;
+    const { selectedRowRedisKeys } = this.state;
+    if (selectedRowRedisKeys.length > 0) {
+      deleteButton = <Button type='danger' onClick={() => this.deleteKeys(selectedRowRedisKeys)}>Delete</Button>
+    } else {
+      deleteButton = <span></span>
+    }
     return (
       <div style={{ padding: '10px 100px', width: '100%' }}>
         <div style={{ overflow: 'auto' }}>
-          <span style={{ paddingBottom: '10px', width: '300', float: 'left' }}>
+          <span style={{ padding: '0 10px 10px 0', width: '300', float: 'left' }}>
             <Search placeholder='search key' enterButton='Search' size='default' onSearch={value => this.searchKey(value)} maxLength='20' allowClear={true} />
           </span>
+
+          {deleteButton}
         </div>
 
-        <Table columns={this.columns} dataSource={this.state.tableData} pagination={false} bordered={true} />
+        <Table columns={this.columns} dataSource={this.state.tableData} pagination={true} bordered={true} rowSelection={this.rowSelection} />
         <div style={{ textAlign: 'center', padding: '20px' }}>
           {
             this.state.dataDone ? <Empty description={<span>no more data</span>} /> : < Button type='primary' onClick={() => this.loadMoreKeys(this.state.query, this.state.nextCursor)}> Load More</Button>

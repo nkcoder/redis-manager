@@ -130,14 +130,14 @@ handleNotExistKey = (key, res) => {
 fetchString = (key, res) => {
   client.get(key, (_, reply) => {
     console.log('key: %s, reply: %s"', key, reply);
-    res.json({ type: 'string', value: reply });
+    res.json({ type: 'string', value: reply, cursor: '0' });
   })
 }
 
 fetchList = (key, res) => {
   client.lrange(key, 0, -1, (_, reply) => {
     console.log('key: %s, reply: %s', key, reply);
-    res.json({ type: 'list', value: reply });
+    res.json({ type: 'list', value: reply, cursor: '0' });
   })
 }
 
