@@ -6,7 +6,7 @@ const axiosClient = axios.create({
 });
 
 axiosClient.interceptors.request.use(function (request) {
-  console.log('request, url: %s, params: %s', request.url, JSON.stringify(request.params));
+  console.log('request, url: %s, params: %s, body: %s', request.url, JSON.stringify(request.params, request.body));
   return request;
 });
 

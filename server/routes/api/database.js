@@ -1,5 +1,8 @@
 const client = require('../../redis');
 const router = require('express').Router();
+const bodyParser = require('body-parser');
+
+router.use(bodyParser.json());
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -39,8 +42,8 @@ router.get('/search', (req, res) => {
     console.log('cursor: %i, match: %s, reply: %s', cursor, pattern, reply);
     res.json(
       {
-        cursor: reply[0],
-        keys: reply[1]
+        'cursor': reply[0],
+        'keys': reply[1]
       }
     );
   })
@@ -90,6 +93,33 @@ router.get('/value', (req, res) => {
 
   });
 
+})
+
+router.put('/expire', (req, res) => {
+  const { key, seconds } = req.body;
+
+  client.expire(key, seconds, (_, reply) => {
+    console.log('expire key: %s, seconds: %i, reply: %s', key, seconds, reply);
+    return res.json({ code: reply });
+  })
+})
+
+router.delete('/delete', (req, res) => {
+  const keys = req.query.keys;
+
+  client.del(keys, (_, reply) => {
+    console.log("delete key: %s, reply: %s", keys, reply);
+    return res.json({ deleted: reply });
+  })
+})
+
+router.get('/ttl', (req, res) => {
+  const key = req.query.key;
+
+  client.ttl(key, (_, reply) => {
+    console.log('ttl for key: %s, reply: %i', key, reply);
+    return res.json({ 'ttl': reply });
+  })
 })
 
 handleNotExistKey = (key, res) => {

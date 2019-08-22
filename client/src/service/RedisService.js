@@ -19,11 +19,23 @@ class RedisService {
   }
 
   fetchValue = (key, cursor) => {
-    return axiosClient.get('/database/value', { params: { key: key, cursor: cursor } });
+    return axiosClient.get(`/database/value`, { params: { key: key, cursor: cursor } });
   }
 
   fetchType = (key) => {
     return axiosClient.get('/database/type', { params: { key: key } });
+  }
+
+  expireKey = (key, seconds) => {
+    return axiosClient.put('/database/expire', { key: key, seconds: seconds })
+  }
+
+  deleteKeys = (keys) => {
+    return axiosClient.delete("/database/delete", { params: { keys: keys } });
+  }
+
+  ttlOfKe = (key) => {
+    return axiosClient.get('/database/ttl', { params: { key: key } });
   }
 
 }
