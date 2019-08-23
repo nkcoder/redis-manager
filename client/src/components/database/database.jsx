@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import RedisService from 'service/RedisService';
+import RedisService from '../../service/RedisService';
 import { Button, Table, Empty, Input, Popconfirm } from 'antd';
 import './database.css';
 
@@ -30,7 +30,7 @@ class Database extends Component {
         dataIndex: 'action',
         title: 'Action',
         align: 'center',
-        render: (text, record) => (
+        render: (_, record) => (
           <div>
             <Button type='primary' className='op-btn' onClick={() => this.getValue(record.key, record.redisKey)}>Get</Button>
             <Button type='ghost' className='op-btn' onClick={() => this.expireKey(record.redisKey, 120)}>Expire</Button>
@@ -88,7 +88,7 @@ class Database extends Component {
   getValue = async (rowKey, key) => {
     console.log('try to show value for key: %s', key);
 
-    const { data } = await RedisService.fetchValue(key, 0);
+    const { data } = await RedisService.getValue(key, 0);
     const { type, cursor, value } = data;
 
     console.log('newCursor: %s, type: %s, value: %o', cursor, type, value);

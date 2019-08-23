@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import RedisService from 'service/RedisService';
+import RedisService from '../../service/RedisService';
 import { Row, Col, Card, Table, Divider } from 'antd';
 
 class Overview extends Component {

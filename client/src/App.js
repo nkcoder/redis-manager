@@ -4,6 +4,7 @@ import { Layout, Menu, Icon } from 'antd';
 import Overview from './components/overview/overview';
 import Client from './components/client/client';
 import Database from './components/database/database';
+import History from './components/history/history';
 
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 
@@ -23,7 +24,6 @@ class App extends React.Component {
   render() {
     return (
       <Router>
-
         <Layout style={{ minHeight: '100vh' }}>
           <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse} style={{ overflow: 'auto', height: '100vh', position: 'fixed', left: '0' }}>
             <div className='logo' />
@@ -35,16 +35,22 @@ class App extends React.Component {
                 <Link to='/overview' />
               </Menu.Item>
 
+              <Menu.Item key='database'>
+                <Icon type='database' />
+                <span>Database</span>
+                <Link to='/database' />
+              </Menu.Item>
+
               <Menu.Item key='clients'>
                 <Icon type='unordered-list' />
                 <span>Clients</span>
                 <Link to='/clients' />
               </Menu.Item>
 
-              <Menu.Item key='database'>
-                <Icon type='database' />
-                <span>Database</span>
-                <Link to='/database' />
+              <Menu.Item key='history'>
+                <Icon type='unordered-list' />
+                <span>History</span>
+                <Link to='/history' />
               </Menu.Item>
 
               <SubMenu key='cluster'
@@ -68,22 +74,19 @@ class App extends React.Component {
             <Content style={{ background: '#fff' }}>
               <Route exact path='/' component={Overview} />
               <Route path='/overview' component={Overview} />
-              <Route path='/clients' component={Client} />
               <Route path='/database' component={Database} />
+              <Route path='/clients' component={Client} />
+              <Route path='/history' component={History} />
             </Content>
 
             <Footer style={{ textAlign: 'center' }}>
               Redis Admin @2019
           </Footer>
-
           </Layout>
-
         </Layout>
-
       </Router>
     )
   }
-
 }
 
 export default App;

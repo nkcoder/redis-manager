@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Table, Divider, Button, Popconfirm, Modal } from 'antd';
-import RedisService from 'service/RedisService';
+import RedisService from '../../service/RedisService';
 
 class Client extends Component {
 

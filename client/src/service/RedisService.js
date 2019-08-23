@@ -2,15 +2,22 @@ import axiosClient from './AxiosService'
 
 class RedisService {
 
+  // /info
   info = () => {
     return axiosClient.get('/info');
   }
 
+  // /clients
   clients = () => {
     return axiosClient.get('/clients');
   }
 
-  allKeys = (cursor) => {
+  killClient = clientId => {
+    return axiosClient.delete(`/clients/${clientId}`)
+  }
+
+  // /keys
+  allKeys = cursor => {
     return axiosClient.get('/database/keys', { params: { cursor: cursor } });
   }
 
@@ -18,11 +25,11 @@ class RedisService {
     return axiosClient.get('/database/search', { params: { key: key, cursor: cursor } });
   }
 
-  fetchValue = (key, cursor) => {
+  getValue = (key, cursor) => {
     return axiosClient.get(`/database/value`, { params: { key: key, cursor: cursor } });
   }
 
-  fetchType = (key) => {
+  getType = key => {
     return axiosClient.get('/database/type', { params: { key: key } });
   }
 
@@ -30,11 +37,11 @@ class RedisService {
     return axiosClient.put('/database/expire', { key: key, seconds: seconds })
   }
 
-  deleteKeys = (keys) => {
+  deleteKeys = keys => {
     return axiosClient.delete("/database/delete", { params: { keys: keys } });
   }
 
-  ttlOfKe = (key) => {
+  ttlOfKey = key => {
     return axiosClient.get('/database/ttl', { params: { key: key } });
   }
 
