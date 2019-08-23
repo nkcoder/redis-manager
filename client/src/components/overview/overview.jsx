@@ -132,31 +132,21 @@ class Overview extends Component {
       },
       {
         key: '2',
-        property: 'AOF Last Rewrite Status',
+        property: 'AOF Last Write Status',
         value: info.Persistence.aof_last_write_status
       },
       {
         key: '3',
-        property: 'AOF Last Rewrite Status',
-        value: info.Persistence.aof_last_write_status
+        property: 'AOF Last Bgrewrite Status',
+        value: info.Persistence.aof_last_bgrewrite_status
       },
       {
         key: '4',
-        property: 'AOF Last Bgwrite Status',
-        value: info.Persistence.aof_last_bgrewrite_status
-      },
-      {
-        key: '5',
-        property: 'AOF Last Bgwrite Status',
-        value: info.Persistence.aof_last_bgrewrite_status
-      },
-      {
-        key: '6',
         property: 'RDB Last Bgsave Status',
         value: info.Persistence.rdb_last_bgsave_status
       },
       {
-        key: '7',
+        key: '5',
         property: 'RDB Last Save Time',
         value: new Date(info.Persistence.rdb_last_save_time * 1000).toDateString()
       },

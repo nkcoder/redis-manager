@@ -81,7 +81,7 @@ class App extends React.Component {
 
             <Footer style={{ textAlign: 'center' }}>
               Redis Admin @2019
-          </Footer>
+            </Footer>
           </Layout>
         </Layout>
       </Router>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Timeline, Pagination } from 'antd';
+import { Timeline } from 'antd';
 
 class History extends Component {
 
