@@ -10,7 +10,7 @@ class History extends Component {
 
 
   timelineData = () => {
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
       this.dataItems.push(< Timeline.Item > item: {i}</Timeline.Item >);
     }
   }

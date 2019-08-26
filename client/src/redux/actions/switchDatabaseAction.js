@@ -1,8 +1,10 @@
 import { SWITCH_DATABASE } from './actionTypes';
 
-export const switchDatabase = db => (
+export const switchDatabase = index => (
   {
     type: SWITCH_DATABASE,
-    payload: db
+    payload: {
+      index
+    }
   }
 );

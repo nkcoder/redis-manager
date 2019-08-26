@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
 import RedisService from '../../service/RedisService';
-import { Button, Table, Empty, Input, Popconfirm } from 'antd';
+import { Button, Table, Empty, Input, Popconfirm, Select } from 'antd';
 import './database.css';
+import { switchDatabase } from '../../redux/actions/switchDatabaseAction';
+import { connect } from 'react-redux';
 
 const { Search } = Input;
+const { Option } = Select;
 
 class Database extends Component {
 
@@ -60,7 +63,7 @@ class Database extends Component {
     nextCursor: 0,
     dataDone: false,
     query: '',
-    selectedRowRedisKeys: []
+    selectedRowRedisKeys: [],
   }
 
   componentDidMount() {
@@ -161,6 +164,11 @@ class Database extends Component {
     }
   );
 
+  switchDatabase = index => {
+    console.log(`switch database to: ${index}`)
+    this.props.switchDatabase(index);
+  }
+
   render() {
     let deleteButton;
     const { selectedRowRedisKeys } = this.state;
@@ -171,10 +179,20 @@ class Database extends Component {
     }
     return (
       <div style={{ padding: '10px 100px', width: '100%' }}>
-        <div style={{ overflow: 'auto' }}>
-          <span style={{ padding: '0 10px 10px 0', width: '300', float: 'left' }}>
-            <Search placeholder='search key' enterButton='Search' size='default' onSearch={value => this.searchKey(value)} maxLength='20' allowClear={true} />
-          </span>
+        <div style={{ overflow: 'auto', paddingBottom: '10px' }}>
+
+          <div style={{ display: 'inline' }}>
+            <b>Select Database: </b>
+            <Select defaultValue='0' style={{ width: '7%', padding: '0 10px' }} onChange={this.switchDatabase}>
+              <Option value='0'>0</Option>
+              <Option value='1'>1</Option>
+              <Option value='2'>2</Option>
+              <Option value='3'>3</Option>
+              <Option value='4'>4</Option>
+            </Select>
+          </div>
+
+          <Search placeholder='search key' enterButton='Search' size='default' onSearch={value => this.searchKey(value)} maxLength='20' allowClear={true} style={{ width: '30%', paddingRight: '10px' }} />
 
           {deleteButton}
         </div>
@@ -186,10 +204,14 @@ class Database extends Component {
           }
         </div>
 
-      </div>
+      </div >
     )
   }
 
 }
 
-export default Database;
+// export default Database;
+export default connect(
+  null,
+  { switchDatabase }
+)(Database);
