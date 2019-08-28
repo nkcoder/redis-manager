@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import RedisService from '../../service/RedisService';
 import { Button, Table, Empty, Input, Popconfirm, Select } from 'antd';
-import './database.css';
+import './Database.css';
 import { switchDatabase } from '../../redux/actions/switchDatabaseAction';
 import { connect } from 'react-redux';
 

@@ -1,3 +1,4 @@
 export default {
-  index: '0'
+  index: '0',
+  clients: []
 }

@@ -1,12 +1,9 @@
 import React from 'react';
 import './App.css';
 import { Layout, Menu, Icon } from 'antd';
-import Overview from './components/overview/overview';
-import Client from './components/client/client';
-import Database from './components/database/database';
-import History from './components/history/history';
 
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Link } from "react-router-dom";
+import { BaseRoute } from './route';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -43,11 +40,11 @@ class App extends React.Component {
               <Menu.Item key='clients'>
                 <Icon type='unordered-list' />
                 <span>Clients</span>
-                <Link to='/clients' />
+                <Link to='/client' />
               </Menu.Item>
 
               <Menu.Item key='history'>
-                <Icon type='unordered-list' />
+                <Icon type='history' />
                 <span>History</span>
                 <Link to='/history' />
               </Menu.Item>
@@ -58,11 +55,7 @@ class App extends React.Component {
           <Layout style={{ marginLeft: 200 }}>
             <Header />
             <Content style={{ background: '#fff' }}>
-              <Route exact path='/' component={Overview} />
-              <Route path='/overview' component={Overview} />
-              <Route path='/database' component={Database} />
-              <Route path='/clients' component={Client} />
-              <Route path='/history' component={History} />
+              <BaseRoute />
             </Content>
 
             <Footer style={{ textAlign: 'center' }}>

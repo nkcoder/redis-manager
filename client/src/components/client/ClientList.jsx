@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
-import { Table, Divider, Button, Popconfirm, Modal } from 'antd';
+import { Table, Button } from 'antd';
 import RedisService from '../../service/RedisService';
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { getClients } from '../../redux/actions/getClientsAction';
 
-class Client extends Component {
+class ClientList extends Component {
 
   constructor(props) {
     super(props);
@@ -35,19 +38,9 @@ class Client extends Component {
         title: 'Action',
         key: 'action',
         align: 'center',
-        render: (text, record) => (
+        render: (_, record) => (
           <div>
-            <Button type='primary' onClick={this.showDetail}>Detail</Button>
-            <Modal title='Client Info' visible={this.state.detailVisible} onOk={this.handleDetailOk} onCancel={this.handleDetailCancel}>
-              <code>{JSON.stringify(this.state.clients.filter(c => c.id === text.id))}</code>
-            </Modal>
-
-            <Divider type='vertical' />
-
-            <Popconfirm title='Sure to KILL?' onConfirm={() => this.handleKill(record.key)}>
-              <Button type='danger'>KILL</Button>
-            </Popconfirm>
-
+            <Link to={`/client/${record.id}`}>Detail</Link>
           </div>
         )
       },
@@ -61,7 +54,7 @@ class Client extends Component {
   }
 
   componentDidMount() {
-    this.fetchClients();
+    this.fetchClients().then(_ => this.props.getClients(this.state.clients));
   }
 
   async fetchClients() {
@@ -85,35 +78,17 @@ class Client extends Component {
     this.fetchClients();
   }
 
-  handleKill = key => {
-    console.warn('try to kill client: ', key);
-  }
-
-  showDetail = () => {
-    console.log('show detail');
-    this.setState({ detailVisible: true });
-  }
-
-  handleDetailOk = () => {
-    this.setState({ detailVisible: false });
-  }
-
-  handleDetailCancel = () => {
-    this.setState({ detailVisible: false });
-  }
-
-
   render() {
     return (
       <div style={{ padding: '40px' }}>
         <div style={{ paddingBottom: '10px', textAlign: 'left' }}>
           <Button type='primary' onClick={() => this.handleRefresh()}>Refresh</Button>
         </div>
+
         <Table columns={this.columns} dataSource={this.state.columnData} bordered={true} />
       </div >
     )
   }
-
 }
 
-export default Client;
+export default connect(null, { getClients })(ClientList);

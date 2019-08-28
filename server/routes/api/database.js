@@ -117,8 +117,17 @@ router.get('/ttl', (req, res) => {
   const key = req.query.key;
 
   client.ttl(key, (_, reply) => {
-    console.log('ttl for key: %s, reply: %i', key, reply);
+    console.log('ttl for key: %s, reply: %s', key, reply);
     return res.json({ 'ttl': reply });
+  })
+})
+
+router.put('/switch-db', (req, res) => {
+  const index = req.query.index;
+  client.select(index, (_, reply) => {
+    console.log('switch db to: %s, reply: %s', index, reply);
+    const code = reply === 'OK' ? 0 : -1;
+    return res.json({ code: code });
   })
 })
 

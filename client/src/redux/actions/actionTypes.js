@@ -1,1 +1,2 @@
 export const SWITCH_DATABASE = 'SWITCH_DATABASE';
+export const GET_CLIENTS = 'GET_CLIENTS';
