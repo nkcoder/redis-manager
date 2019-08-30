@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import RedisService from '../../service/RedisService';
-import { Button, Table, Empty, Input, Popconfirm, Select, Menu, Dropdown, message } from 'antd';
+import { Button, Table, Input, Popconfirm, Select, Menu, Dropdown, message, Divider } from 'antd';
 import './Database.css';
 import { switchDatabase } from '../../redux/actions/switchDatabaseAction';
 import { connect } from 'react-redux';
@@ -179,17 +179,16 @@ class Database extends Component {
     console.log(`switch database to: ${index}`)
     const { data, status } = await RedisService.switchDataBase(index);
 
-    let showMessage;
     if (status === 200) {
       console.log(`switch db to ${index} done.`);
       this.loadKeys('', '0');
       this.props.switchDatabase(index);
-      showMessage = `switch to db: ${index} done.`;
+      message.success(`switch to db: ${index}`);
     } else {
-      showMessage = `switch to db: ${index} failed, reason: ${data.message}`;
+      message.warn(`switch to db: ${index} failed, reason: ${data.message}`)
     }
 
-    message.success(showMessage);
+
   }
 
   render() {
@@ -213,10 +212,16 @@ class Database extends Component {
               <Option value='0'>0</Option>
               <Option value='1'>1</Option>
               <Option value='2'>2</Option>
+              <Option value='3'>3</Option>
+              <Option value='4'>4</Option>
             </Select>
           </div>
 
-          <Search placeholder='search key' enterButton='Search' size='default' onSearch={value => this.searchKey(value)} maxLength='20' allowClear={true} style={{ width: '30%', paddingRight: '10px' }} />
+          <Button type='primary' style={{ paddingRight: '10px' }}>Add key</Button>
+
+          <Divider type='vertical' />
+
+          <Search placeholder='search key' enterButton='Search' size='default' onSearch={value => this.searchKey(value)} maxLength='30' allowClear={true} style={{ maxWidth: '30%', paddingRight: '10px' }} />
 
           {deleteButton}
         </div>
@@ -224,7 +229,7 @@ class Database extends Component {
         <Table columns={this.columns} dataSource={this.state.tableData} pagination={true} bordered={true} rowSelection={this.rowSelection} />
         <div style={{ textAlign: 'center', padding: '20px' }}>
           {
-            this.state.dataDone ? <Empty description={<span>no more data</span>} /> : < Button type='primary' onClick={() => this.loadMoreKeys(this.state.query, this.state.nextCursor)}> Load More</Button>
+            !this.state.dataDone && < Button type='primary' onClick={() => this.loadMoreKeys(this.state.query, this.state.nextCursor)}> Load More</Button>
           }
         </div>
 

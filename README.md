@@ -1,4 +1,4 @@
-# Redis Admin
+# Redis Manager
 
 A Simple GUI client for Redis.
 
