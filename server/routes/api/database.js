@@ -1,6 +1,7 @@
 const client = require('../../redis');
 const router = require('express').Router();
 const bodyParser = require('body-parser');
+const redisResponse = require('../../lib/redisResponse');
 
 router.use(bodyParser.json());
 
@@ -15,12 +16,10 @@ router.get('/keys', (req, res) => {
   client.scan(cursor, 'COUNT', DEFAULT_PAGE_SIZE, (_, reply) => {
     console.log('cursor: %s, database reply: %s', cursor, reply);
 
-    res.json(
-      {
-        'cursor': reply[0],
-        'keys': reply[1]
-      }
-    )
+    res.json({
+      cursor: reply[0],
+      keys: reply[1]
+    })
   });
 
 });
@@ -33,19 +32,12 @@ router.get('/search', (req, res) => {
     cursor = 0;
   }
 
-  client.scan(cursor, 'MATCH', pattern, 'COUNT', DEFAULT_PAGE_SIZE, (err, reply) => {
-    if (err) {
-      console.log('err: ', err);
-      res.json({});
-      return;
-    }
+  client.scan(cursor, 'MATCH', pattern, 'COUNT', DEFAULT_PAGE_SIZE, (_, reply) => {
     console.log('cursor: %i, match: %s, reply: %s', cursor, pattern, reply);
-    res.json(
-      {
-        'cursor': reply[0],
-        'keys': reply[1]
-      }
-    );
+    res.json({
+      cursor: reply[0],
+      keys: reply[1]
+    });
   })
 
 })
@@ -100,7 +92,28 @@ router.put('/expire', (req, res) => {
 
   client.expire(key, seconds, (_, reply) => {
     console.log('expire key: %s, seconds: %i, reply: %s', key, seconds, reply);
-    return res.json({ code: reply });
+    if (reply === redisResponse.success) {
+      return res.json();
+    } else {
+      return res.status(400).json({
+        message: `key does not exist.`
+      });
+    }
+  })
+})
+
+router.put('/persist', (req, res) => {
+  const { key } = req.body;
+
+  client.persist(key, (_, reply) => {
+    console.log('persist key: %s, reply: %s', key, reply);
+    if (reply === redisResponse.success) {
+      return res.json();
+    } else {
+      return res.status(400).json({
+        message: 'key does not exist or does not have an associated timeout.'
+      });
+    }
   })
 })
 
@@ -109,7 +122,13 @@ router.delete('/delete', (req, res) => {
 
   client.del(keys, (_, reply) => {
     console.log("delete key: %s, reply: %s", keys, reply);
-    return res.json({ deleted: reply });
+    if (reply > 0) {
+      return res.json();
+    } else {
+      return res.status(400).json({
+        message: `only ${reply} of ${keys.length} keys are deleted, others may not exist.`
+      });
+    }
   })
 })
 
@@ -118,16 +137,31 @@ router.get('/ttl', (req, res) => {
 
   client.ttl(key, (_, reply) => {
     console.log('ttl for key: %s, reply: %s', key, reply);
+    if (reply === redisResponse.key_not_exist) {
+      return res.status(400).json({
+        message: 'key not exist.'
+      })
+    } else if (reply === redisResponse.key_not_volatile) {
+      return res.status(400).json({
+        message: 'key exists but has no associated expire.'
+      })
+    }
+
     return res.json({ 'ttl': reply });
   })
 })
 
 router.put('/switch-db', (req, res) => {
-  const index = req.query.index;
+  const index = req.body.index;
   client.select(index, (_, reply) => {
     console.log('switch db to: %s, reply: %s', index, reply);
-    const code = reply === 'OK' ? 0 : -1;
-    return res.json({ code: code });
+    if (reply !== redisResponse.ok) {
+      return res.status(400).json({
+        message: `cannot switch to ${index}, error: ${reply}`
+      })
+    }
+
+    return res.json();
   })
 })
 

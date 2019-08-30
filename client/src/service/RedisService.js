@@ -45,6 +45,10 @@ class RedisService {
     return axiosClient.get('/database/ttl', { params: { key: key } });
   }
 
+  switchDataBase = index => {
+    return axiosClient.put('/database/switch-db', { index: index });
+  }
+
 }
 
 export default new RedisService();

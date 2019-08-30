@@ -11,7 +11,7 @@ class History extends Component {
 
   timelineData = () => {
     for (let i = 0; i < 10; i++) {
-      this.dataItems.push(< Timeline.Item > item: {i}</Timeline.Item >);
+      this.dataItems.push(< Timeline.Item key={i} > item: {i}</Timeline.Item >);
     }
   }
 

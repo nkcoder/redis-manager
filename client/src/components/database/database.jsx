@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import RedisService from '../../service/RedisService';
-import { Button, Table, Empty, Input, Popconfirm, Select } from 'antd';
+import { Button, Table, Empty, Input, Popconfirm, Select, Menu, Dropdown, message } from 'antd';
 import './Database.css';
 import { switchDatabase } from '../../redux/actions/switchDatabaseAction';
 import { connect } from 'react-redux';
@@ -33,15 +33,26 @@ class Database extends Component {
         dataIndex: 'action',
         title: 'Action',
         align: 'center',
-        render: (_, record) => (
-          <div>
-            <Button type='primary' className='op-btn' onClick={() => this.getValue(record.key, record.redisKey)}>Get</Button>
-            <Button type='ghost' className='op-btn' onClick={() => this.expireKey(record.redisKey, 120)}>Expire</Button>
-            <Popconfirm title='Sure to KILL?' onConfirm={() => this.deleteKeys(record.redisKey)}>
-              <Button type='danger' className='op-btn' >Delete</Button>
-            </Popconfirm>
-          </div>
-        )
+        render: (_, record) => {
+          const menu = (
+            <Menu>
+              <Menu.Item onClick={() => this.expireKey(record.redisKey, 10)}><div>Expire in seconds</div></Menu.Item>
+              <Menu.Item ><div>Persist (remove expire)</div></Menu.Item>
+              <Menu.Item><div>TTL in seconds</div></Menu.Item>
+            </Menu>
+          );
+          return (
+            <div>
+              <Button type='primary' className='op-btn' onClick={() => this.getValue(record.key, record.redisKey)}>Get</Button>
+              <Popconfirm title='Sure to delete?' onConfirm={() => this.deleteKeys(record.redisKey)}>
+                <Button type='danger' className='op-btn' >Delete</Button>
+              </Popconfirm>
+              <Dropdown overlay={menu} placement='bottomCenter'>
+                <Button type='ghost'>More</Button>
+              </Dropdown>
+            </div>
+          );
+        }
       }
     ];
 
@@ -164,16 +175,31 @@ class Database extends Component {
     }
   );
 
-  switchDatabase = index => {
+  switchDatabase = async index => {
     console.log(`switch database to: ${index}`)
-    this.props.switchDatabase(index);
+    const { data, status } = await RedisService.switchDataBase(index);
+
+    let showMessage;
+    if (status === 200) {
+      console.log(`switch db to ${index} done.`);
+      this.loadKeys('', '0');
+      this.props.switchDatabase(index);
+      showMessage = `switch to db: ${index} done.`;
+    } else {
+      showMessage = `switch to db: ${index} failed, reason: ${data.message}`;
+    }
+
+    message.success(showMessage);
   }
 
   render() {
     let deleteButton;
     const { selectedRowRedisKeys } = this.state;
     if (selectedRowRedisKeys.length > 0) {
-      deleteButton = <Button type='danger' onClick={() => this.deleteKeys(selectedRowRedisKeys)}>Delete</Button>
+      deleteButton =
+        <Popconfirm title='Are you sure to DELETE these keys?' onConfirm={() => this.deleteKeys(selectedRowRedisKeys)}>
+          <Button type='danger'>Delete</Button>
+        </Popconfirm>
     } else {
       deleteButton = <span></span>
     }
@@ -183,12 +209,10 @@ class Database extends Component {
 
           <div style={{ display: 'inline' }}>
             <b>Select Database: </b>
-            <Select defaultValue='0' style={{ width: '7%', padding: '0 10px' }} onChange={this.switchDatabase}>
+            <Select defaultValue='0' style={{ width: '70px', padding: '0 10px' }} onChange={this.switchDatabase}>
               <Option value='0'>0</Option>
               <Option value='1'>1</Option>
               <Option value='2'>2</Option>
-              <Option value='3'>3</Option>
-              <Option value='4'>4</Option>
             </Select>
           </div>
 
